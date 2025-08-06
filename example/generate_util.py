@@ -18,7 +18,7 @@ elif torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-device = torch.device("cpu") # UR backend failed. UR backend returns:40 (UR_RESULT_ERROR_OUT_OF_RESOURCES) if run on xpu
+# device = torch.device("cpu") # UR backend failed. UR backend returns:40 (UR_RESULT_ERROR_OUT_OF_RESOURCES) if run on xpu
     
 accelerator = Accelerator()
 os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = 'true'
