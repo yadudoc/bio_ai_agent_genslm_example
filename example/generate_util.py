@@ -5,7 +5,10 @@ from pathlib import Path
 from genslm import GenSLM, SequenceDataset
 from Bio.Seq import Seq
 import re
-import intel_extension_for_pytorch as ipex
+try:
+    import intel_extension_for_pytorch as ipex
+except ImportError:
+    pass
 from accelerate import Accelerator
 
 if torch.xpu.is_available():
