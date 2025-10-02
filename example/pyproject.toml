@@ -1,0 +1,49 @@
+[project]
+name = "cepi_example"
+version = "0.1.0"
+description = "CEPI Example"
+readme = "README.md"
+requires-python = "==3.10.*"
+dependencies = [
+    "levenshtein",
+    "pydantic==2.11.9",
+    "numpy==1.26.4"
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "pre-commit>=4.2.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "pytest-env>=1.1.5",
+    "ruff>=0.12.7",
+    "tox>=4.28.3",
+]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+]
+ignore = [
+    "E501",  # line too long - handled by formatter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cepi_example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+diamond_backend = ["*json", "input/dna.fasta", "output/generated.fasta"]

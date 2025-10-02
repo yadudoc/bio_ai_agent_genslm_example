@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: cepi_example
+Version: 0.1.0
+Summary: CEPI Example
+Requires-Python: ==3.10.*
+Description-Content-Type: text/markdown
+Requires-Dist: levenshtein
+Requires-Dist: pydantic==2.11.9
+Requires-Dist: numpy==1.26.4

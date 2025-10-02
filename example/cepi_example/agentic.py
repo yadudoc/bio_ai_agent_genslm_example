@@ -1,0 +1,90 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from academy.agent import Agent, action
+from academy.logging import init_logging
+from academy.manager import Manager
+from academy.exchange.cloud import HttpExchangeFactory
+from globus_compute_sdk import Executor
+import json
+from Bio import SeqIO
+from tqdm import tqdm
+
+
+EXCHANGE_ADDRESS = 'https://exchange.proxystore.dev'
+
+
+class SequenceGenerator(Agent):
+    """ The Generator runs on Jureca@Julich
+    """
+
+    async def agent_on_startup(self) -> None:
+        from generate_util import load_genslm_model, generate
+        from Bio import SeqIO
+        from tqdm import tqdm
+        model_cache_dir="/p/project/rcfd/yadunand//2.5B"
+        checkpoint_dir = '/p/project/rcfd/yadunand/checkpoint-2929'
+        self.model, self.tokenizer = load_genslm_model(model_path=model_cache_dir, checkpoint_path=checkpoint_dir)
+
+
+    @action
+    def generate_sequences(self, vana_records: list):
+        vanA_seqs = [(extract_id(r.id), str(r.seq)) for r in vana_records]
+
+        protein_sequences = []
+
+        for idx, (gene_name, dna_seq) in enumerate(tqdm(vanA_seqs, desc="🚀 Generating")):
+            sample = generate(
+                dna_seq,
+                model,
+                tokenizer,
+                prompt_codons = 100,
+                gen_max_length = 375,
+                gen_min_length = 325,
+                num_outputs = 1,
+            )
+
+        for i, seq in enumerate(sample, 1):
+            header = f"{gene_name}|{i}"
+            protein_sequences.append((header, seq))
+
+        return protein_sequences
+
+    @action
+    def health_check(self):
+        return str(self.model)
+
+async def main():
+    vana_file = "input/dna.fasta"
+    vana_records = list(SeqIO.parse(vana_file, "fasta"))
+
+    init_logging('INFO')
+
+    async with await Manager.from_exchange_factory(
+        factory = HttpExchangeFactory(
+            url=EXCHANGE_ADDRESS,
+            auth_method='globus',
+        ),
+        executors={'jureca_devel': Executor(endpoint_id="38a1e0a8-6c6c-468e-b4d7-00687efc3c2f"),
+                   't2': ThreadPoolExecutor(max_workers=1)}
+    ) as manager:
+        # agent_handle = await manager.launch(ExampleAgent(), executor='t1')
+        g_handle = await manager.launch(SequenceGenerator(), executor='jureca_devel')
+
+        h = await g_handle.health_check()
+        print("healthcheck : ", h)
+
+        result = await g_handle.generate_sequences(vana_records)
+
+        print(f" {result=}")
+
+        await g_handle.shutdown()
+        # await h2.shutdown()
+
+
+
+if __name__ == "__main__":
+
+    asyncio.run(main())
+
+
+

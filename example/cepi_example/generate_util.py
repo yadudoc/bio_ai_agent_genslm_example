@@ -18,8 +18,8 @@ elif torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-# device = torch.device("cpu") # UR backend failed. UR backend returns:40 (UR_RESULT_ERROR_OUT_OF_RESOURCES) if run on xpu
-    
+device = torch.device("cpu") # UR backend failed. UR backend returns:40 (UR_RESULT_ERROR_OUT_OF_RESOURCES) if run on xpu
+
 accelerator = Accelerator()
 os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = 'true'
 
@@ -53,9 +53,9 @@ def load_genslm_model(model_path: str, checkpoint_path: Optional[str] = None):
         ckpt_file = Path(checkpoint_path) / "pytorch_model_fsdp.bin"
         if ckpt_file.exists():
             print(f"📦 Loading checkpoint: {ckpt_file}")
-            model.load_state_dict(torch.load(ckpt_file, map_location="cpu"), strict=False)
+            model.load_state_dict(torch.load(ckpt_file, map_location="cpu", weights_only=False), strict=False)
         elif Path(checkpoint_path).exists():
-            model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"), strict=False)
+            model.load_state_dict(torch.load(checkpoint_path, map_location="cpu", weights_only=False), strict=False)
     else:
         print("⚠️ No checkpoint provided, using pretrained model weights.")
 
